@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      UserRole @default(USER)
+  firstName String?
+  lastName  String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+    // Password Reset
+  resetToken        String?  @unique
+  resetTokenExpires DateTime?
+
+  createdNews     News[]
+  createdEvents   Event[]
+  createdProjects Project[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  USER
+}
+
+model EventRegistration {
+  id        String   @id @default(cuid())
+  eventId   String
+  name      String
+  email     String
+  createdAt DateTime @default(now())
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  @@unique([eventId, email])
+}
+
+
+model Event {
+  id          String    @id @default(cuid())
+  slug        String?   @unique
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+  openForRegistration Boolean              @default(false)
+  title       String
+  description String?
+  content     String?
+  language    String  @default("Swedish")
+
+  creator User? @relation(fields: [createdById], references: [id])
+  registrations  EventRegistration[] 
+
+  @@map("events")
+}
+
+model News {
+  id            String   @id @default(cuid())
+  slug          String?  @unique
+  publishedDate DateTime
+  isPublished   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdById   String?
+
+  title       String
+  description String?
+  content     String?
+  language    String  @default("Swedish")
+
+  creator User? @relation(fields: [createdById], references: [id])
+
+  @@map("news")
+}
+
+enum ProjectCategory {
+  LOCAL
+  EU
+  INTERNATIONAL
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  isPublished Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  title       String
+  description String?
+  content     String?
+  language    String  @default("Swedish")
+
+  category ProjectCategory @default(LOCAL)
+
+  creator User? @relation(fields: [createdById], references: [id])
+
+  @@map("projects")
+}
+
+model Partner {
+  id          String      @id @default(cuid())
+  slug        String?     @unique
+  name        String
+  website     String?
+  logoUrl     String?
+  logoPublicId String?
+  type        PartnerType
+  isPublished Boolean     @default(false)
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  language    String      @default("Swedish")
+
+  description String?
+
+  @@map("partners")
+}
+
+enum PartnerType {
+  FINANCIER
+  COLLABORATOR
+  EU_PROJECT
+  INTERNATIONAL_PROJECT
+}
+
+enum EntityType {
+  NEWS
+  EVENT
+  PROJECT
+  PARTNER
+  HERO_SECTION
+  GALLERY_COMPONENT
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model Media {
+  id           String             @id @default(cuid())
+  url          String
+  publicId     String?
+  mediaType    MediaType
+  title        String?
+  description  String?
+  altText      String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  associations MediaAssociation[]
+}
+
+model MediaAssociation {
+  id         String     @id @default(cuid())
+  mediaId    String
+  entityId   String
+  entityType EntityType
+  order      Int?
+  createdAt  DateTime   @default(now())
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, entityId, entityType])
+}
+
+model ContactMessage {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  subject   String        @default("No subject")
+  status    ContactStatus @default(UNREAD)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("contact_messages")
+}
+
+enum ContactStatus {
+  UNREAD
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+enum HeroStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model HeroSection {
+  id          String      @id @default(cuid())
+  page        String      // e.g. "home", "events", "projects"
+  title       String
+  subtitle    String?
+  buttonText  String?
+  buttonLink  String?
+  language    String      @default("Swedish")
+  status      HeroStatus  @default(DRAFT)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model YouthTestimonial {
+  id          String   @id @default(cuid())
+  name        String
+  age         Int
+  message     String
+  program     String
+  imageUrl    String?
+  isPublished Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+}

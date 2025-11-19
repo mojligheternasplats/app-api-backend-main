@@ -1,0 +1,119 @@
+Great question 👍 you’ve come very far already. Let’s step back and build a **clear todo list** so you know exactly what’s left to make your backend API feature-complete and production-ready.
+
+---
+
+# ✅ What You Already Have
+
+* **Database Schema (Prisma)** with:
+
+  * `User`, `Project`, `Partner`, `Event`, `News`, `ContactMessage`, `Media`
+* **Repositories → Services → Controllers → Routes** for:
+
+  * `User`, `Project`, `Partner`, `Event`, `ContactMessage` (done)
+* **Media handling**: URL uploads and **file uploads with Multer** (local disk).
+* **Seeding script** with sample data (admin user, example projects, etc).
+* **Express app** with error handling, middlewares (helmet, cors, compression).
+
+---
+
+# 📝 Todo List (Remaining Work)
+
+### 1. **News Module**
+
+* [ ] Repository, Service, Controller, Routes (CRUD) for `News`
+* [ ] Endpoints:
+
+  * `GET /api/news` → list all news
+  * `GET /api/news/slug/:slug` → fetch by slug (for frontend blog pages)
+  * `POST /api/news` → create (admin only)
+  * `PUT /api/news/:id` → update
+  * `DELETE /api/news/:id` → delete
+* [ ] Attach media (images, videos) to news articles
+
+---
+
+### 2. **Authentication & Authorization**
+
+* [ ] Register / Login endpoints with JWT
+* [ ] `authMiddleware` verifies token
+* [ ] Role-based access (`ADMIN`, `EDITOR`, `USER`)
+* [ ] Protect create/update/delete routes (projects, news, events, partners, media, messages)
+
+---
+
+### 3. **Validation Layer**
+
+* [ ] Add request validation with **Zod** or **Joi** (example: email format, required fields)
+* [ ] Return structured 400 errors instead of generic ones
+
+---
+
+### 4. **Media Enhancements**
+
+* [ ] Delete file from `/uploads/media` when media record is deleted
+* [ ] Add support for **avatars** (`/uploads/avatars`) for users
+* [ ] Prepare config for switching storage to **Cloudinary/S3**
+
+---
+
+### 5. **Admin Dashboard Support**
+
+* [ ] Pagination + search in list endpoints (already scaffolded in repos, test all)
+* [ ] Sort by `createdAt` / `order` fields where relevant
+* [ ] Return consistent response format:
+
+  ```json
+  {
+    "data": [...],
+    "meta": { "page": 1, "limit": 10, "total": 50 }
+  }
+  ```
+
+---
+
+### 6. **Error Handling**
+
+* [ ] Improve error messages in `errorHandler` (map Prisma errors, e.g. unique constraint violations)
+* [ ] Add 404 handling for missing routes
+
+---
+
+### 7. **Security / Production Setup**
+
+* [ ] Store passwords hashed (already using bcrypt in seed, make sure in auth too)
+* [ ] Add `dotenv` config for:
+
+  * `JWT_SECRET`
+  * `DATABASE_URL`
+  * `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+  * `UPLOAD_DIR` (optional)
+* [ ] Set correct **CORS** origin (`http://localhost:5173` for dev, your frontend domain for prod)
+
+---
+
+### 8. **Testing**
+
+* [ ] Postman collection for all endpoints
+* [ ] Write Jest tests for services (optional but recommended)
+
+---
+
+### 9. **Docs**
+
+* [ ] Swagger setup (already scaffolded, but add models + endpoints)
+* [ ] README with instructions: install, migrate, seed, run
+
+---
+
+# 🚀 Optional Nice-to-Have
+
+* [ ] Email notification when new `ContactMessage` is created
+* [ ] Logging with Winston / pino instead of console
+* [ ] Background jobs (BullMQ) if needed for heavy tasks
+* [ ] API versioning (`/api/v1/...`)
+
+---
+
+👉 If you want, I can prepare the **next concrete step** for you: building the **News module** (repo, service, controller, routes, and example JSON). That way your frontend can start pulling articles.
+
+Would you like me to write the News module next, in the same style as Project/Partner/Event?

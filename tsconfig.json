@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",         // or at least "ES2015"
+    "lib": ["ES2020"],          // make sure modern features are allowed
+    "module": "CommonJS",       // for Node.js
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,       // 👈 important: ignore Prisma’s generated types
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist"
+  }
+}
