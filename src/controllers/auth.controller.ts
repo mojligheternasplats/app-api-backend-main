@@ -57,3 +57,32 @@ export const me = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: "FAILED_TO_FETCH_PROFILE" });
   }
 };
+
+export const updateProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "UNAUTHORIZED" });
+    }
+
+    const { firstName, lastName, email } = req.body;
+
+    // Validate (optional but recommended)
+    if (!email || email.trim() === "") {
+      return res.status(400).json({ error: "EMAIL_REQUIRED" });
+    }
+
+    const updatedUser = await UserRepository.update(userId, {
+      firstName,
+      lastName,
+      email,
+    });
+
+    const { password, ...safeUser } = updatedUser;
+
+    return res.json(safeUser);
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ error: "FAILED_TO_UPDATE_PROFILE" });
+  }
+};
