@@ -13,12 +13,24 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  console.log(req.body)
   try {
     const { email, password } = req.body;
     const result = await AuthService.login(email, password);
     res.json(result);
   } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    console.error(error);
+
+    const code = error.code || error.message;
+
+    if (code === "EMAIL_NOT_FOUND") {
+      return res.status(404).json({ error: "EMAIL_NOT_FOUND" });
+    }
+
+    if (code === "WRONG_PASSWORD") {
+      return res.status(401).json({ error: "WRONG_PASSWORD" });
+    }
+
+    res.status(400).json({ error: "UNKNOWN_ERROR" });
   }
 };
+

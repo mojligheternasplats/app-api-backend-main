@@ -14,14 +14,28 @@ export class AuthService {
   }
 
   static async login(email: string, password: string) {
-    console.log("login")
+    console.log("login");
+
     const user = await UserRepository.findByEmail(email);
-    if (!user) throw new Error("Invalid credentials");
+
+    if (!user) {
+      // Email not registered
+      const error: any = new Error("EMAIL_NOT_FOUND");
+      error.code = "EMAIL_NOT_FOUND";
+      throw error;
+    }
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) throw new Error("Invalid credentials");
+
+    if (!valid) {
+      // Password is wrong
+      const error: any = new Error("WRONG_PASSWORD");
+      error.code = "WRONG_PASSWORD";
+      throw error;
+    }
 
     const token = signToken({ id: user.id, role: user.role });
     return { user, token };
   }
+
 }
