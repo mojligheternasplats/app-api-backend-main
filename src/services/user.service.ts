@@ -2,9 +2,7 @@ import { UserRepository } from "../repositories/user.repository";
 import { UserRole } from "@prisma/client";
 
 export class UserService {
-  static async getProfile(id: string) {
-    return UserRepository.findById(id);
-  }
+
 
   static async updateUser(id: string, payload: any) {
     if (!id) throw new Error("User ID is required for update");

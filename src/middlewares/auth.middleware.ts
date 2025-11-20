@@ -1,7 +1,9 @@
 
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
-
+export interface AuthRequest extends Request {
+  user?: { id: string; role: string };
+}
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: "No token provided" });
