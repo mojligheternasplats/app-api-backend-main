@@ -77,12 +77,10 @@ export const mediaController = {
   async uploadFile(req: Request, res: Response) {
     try {
       if (!req.file?.path) return bad(res, "No file uploaded");
-      const { title, altText, description, entityType, mediaType } = req.body || {};
+      const {altText, entityType, mediaType } = req.body || {};
       const created = await mediaService.uploadFileAndCreateRecord({
         localFilePath: req.file.path,
-        title,
         altText,
-        description,
         entityType,
         mediaType,
       });
@@ -95,16 +93,15 @@ export const mediaController = {
   // POST /api/media/url  (upload by remote URL)
   async uploadUrl(req: Request, res: Response) {
     try {
-      const { url, title, altText, description, entityType, mediaType } = req.body || {};
+      const { url, altText,  entityType, mediaType } = req.body || {};
       if (!url) return bad(res, "url is required");
-      const created = await mediaService.uploadUrlAndCreateRecord({
-        url,
-        title,
-        altText,
-        description,
-        entityType,
-        mediaType,
-      });
+  const created = await mediaService.uploadUrlAndCreateRecord({
+  url,
+  altText,
+  entityType,
+  mediaType,
+});
+
       return ok(res, created, 201);
     } catch (e: any) {
       return bad(res, e?.message || "URL upload failed");

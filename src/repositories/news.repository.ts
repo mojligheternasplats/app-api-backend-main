@@ -145,34 +145,70 @@ export class NewsRepository {
     };
   }
 
-  static async create(data: {
-    title: string;
-    description?: string;
-    content?: string;
-    language?: string;
-    isPublished?: boolean;
-    publishedDate: Date;
-    createdById?: string | null;
-    slug: string;
-  }) {
-    return prisma.news.create({ data });
-  }
+static async create(data: {
+  title: string;
+  description?: string | null;
+  content?: string | null;
+  language?: string;
+  isPublished?: boolean;
+  publishedDate?: Date | null;
+  createdById?: string | null;
+  slug: string;
+}) {
+  const {
+    title,
+    description,
+    content,
+    language,
+    isPublished,
+    publishedDate,
+    createdById,
+    slug,
+  } = data;
+
+  return prisma.news.create({
+    data: {
+      title,
+      description: description ?? null,
+      content: content ?? null,
+      language,
+      isPublished,
+      publishedDate: publishedDate ?? new Date(),
+      slug,
+      ...(createdById
+        ? { creator: { connect: { id: createdById } } }
+        : {}),
+    },
+  });
+}
+
 
   static async update(
-    id: string,
-    data: Partial<{
-      title: string;
-      description?: string | null;
-      content?: string | null;
-      language?: string;
-      isPublished?: boolean;
-      publishedDate?: Date;
-      slug?: string | null;
-      createdById?: string | null;
-    }>
-  ) {
-    return prisma.news.update({ where: { id }, data });
+  id: string,
+  data: Partial<{
+    title: string;
+    description: string | null;
+    content: string | null;
+    language: string;
+    isPublished: boolean;
+    publishedDate: Date | null;
+    slug: string;
+    createdById: string | null;
+  }>
+) {
+  const updateData: any = { ...data };
+
+  if (data.createdById) {
+    updateData.creator = { connect: { id: data.createdById } };
+    delete updateData.createdById;
   }
+
+  return prisma.news.update({
+    where: { id },
+    data: updateData,
+  });
+}
+
 
   static async delete(id: string) {
     return prisma.news.delete({ where: { id } });

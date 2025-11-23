@@ -3,18 +3,16 @@
   "description": "Simple api sample in Node",
   "version": "1.0.0",
   "private": true,
-  "main": "index.js",
-  "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "test": "jest",
-    "migrate": "prisma migrate dev --name init",
-    "studio": "prisma studio"
-  },
-  "prisma": {
-    "seed": "ts-node --transpile-only prisma/seed.ts"
-  },
+  "main": "dist/index.js",
+"scripts": {
+  "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+  "build": "tsc",
+  "start": "node dist/index.js",
+  "test": "jest",
+  "migrate": "prisma migrate deploy",
+  "studio": "prisma studio"
+},
+
   "author": "Google LLC",
   "license": "Apache-2.0",
   "dependencies": {

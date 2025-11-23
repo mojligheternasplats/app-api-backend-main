@@ -53,17 +53,64 @@ export class NewsService {
     return n ? NewsService.toCleanResponse(n) : null;
   }
 
-  static async createNews(data: {
+static async createNews(data: {
+  title: string;
+  description?: string | null;
+  content?: string | null;
+  language?: string;
+  isPublished?: boolean;
+  publishedDate?: string | Date | null;
+  createdById?: string | null;
+  slug?: string;
+}) {
+  const baseSlug =
+    data.slug?.trim() ||
+    slugify(data.title, { lower: true, strict: true });
+
+  let slug = baseSlug;
+  let i = 1;
+
+  while (await prisma.news.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${i++}`;
+  }
+
+  return NewsRepository.create({
+    title: data.title,
+    description: data.description ?? null,
+    content: data.content ?? null,
+    language: data.language ?? "Swedish",
+    isPublished: data.isPublished ?? false,
+    publishedDate:
+      data.publishedDate
+        ? new Date(data.publishedDate)
+        : new Date(),
+    createdById: data.createdById ?? null,
+    slug,
+  });
+}
+
+
+static async updateNews(
+  id: string,
+  data: Partial<{
     title: string;
-    description?: string;
-    content?: string;
-    language?: string;
-    isPublished?: boolean;
-    publishedDate?: string | Date;
-    createdById?: string | null;
-    slug?: string;
-  }) {
-    const baseSlug = data.slug?.trim() || slugify(data.title, { lower: true, strict: true });
+    description: string | null;
+    content: string | null;
+    language: string;
+    isPublished: boolean;
+    publishedDate: Date | null;
+    slug: string;
+    createdById: string | null;
+  }>
+) {
+  // convert publishedDate string → Date
+  if (typeof data.publishedDate === "string") {
+    data.publishedDate = new Date(data.publishedDate);
+  }
+
+  // regenerate slug only if provided
+  if (data.slug) {
+    const baseSlug = slugify(data.slug, { lower: true, strict: true });
     let slug = baseSlug;
     let i = 1;
 
@@ -71,47 +118,12 @@ export class NewsService {
       slug = `${baseSlug}-${i++}`;
     }
 
-    return NewsRepository.create({
-      title: data.title,
-      description: data.description ?? null,
-      content: data.content ?? null,
-      language: data.language ?? "Swedish",
-      isPublished: data.isPublished ?? false,
-      publishedDate: data.publishedDate ? new Date(data.publishedDate) : new Date(),
-      createdById: data.createdById ?? null,
-      slug,
-    });
+    data.slug = slug;
   }
 
-  static async updateNews(
-    id: string,
-    data: Partial<{
-      title: string;
-      description?: string | null;
-      content?: string | null;
-      language?: string;
-      isPublished?: boolean;
-      publishedDate?: string | Date;
-      slug?: string;
-      createdById?: string | null;
-    }>
-  ) {
-    if (data.slug) {
-      const baseSlug = slugify(data.slug, { lower: true, strict: true });
-      let slug = baseSlug;
-      let i = 1;
-      while (await prisma.news.findUnique({ where: { slug } })) {
-        slug = `${baseSlug}-${i++}`;
-      }
-      data.slug = slug;
-    }
+  return NewsRepository.update(id, data);
+}
 
-    if (data.publishedDate) {
-      data.publishedDate = new Date(data.publishedDate);
-    }
-
-    return NewsRepository.update(id, data);
-  }
 
   static async deleteNews(id: string) {
     // Remove media associations first

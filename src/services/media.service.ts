@@ -28,6 +28,7 @@ export const mediaService = {
   async uploadFileAndCreateRecord(opts: {
     localFilePath: string;
     entityType?: string;
+    altText?: string;
     mediaType: string; // "IMAGE" or "VIDEO"
   }) {
     const folder = resolveFolder(opts.entityType);
@@ -47,6 +48,7 @@ export const mediaService = {
       data: {
         url: result.secure_url,
         publicId: result.public_id,
+        altText: result.altText,
         mediaType: "IMAGE",
       },
     });
@@ -56,6 +58,7 @@ export const mediaService = {
   async uploadUrlAndCreateRecord(opts: {
     url: string;
     entityType?: string;
+    altText?: string;
     mediaType: string;
   }) {
     const folder = resolveFolder(opts.entityType);
@@ -71,6 +74,7 @@ export const mediaService = {
       data: {
         url: result.secure_url,
         publicId: result.public_id,
+        altText: result.altText,
         mediaType: "IMAGE",
       },
     });

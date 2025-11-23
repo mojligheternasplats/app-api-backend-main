@@ -72,9 +72,9 @@ export const mediaService = {
         url: result.secure_url,
         publicId: result.public_id,
         mediaType: (opts.mediaType || "IMAGE") as any,
-        title: opts.title || null,
+      
         altText: opts.altText || null,
-        description: opts.description || null,
+    
       },
       include: { associations: true },
     });
@@ -106,9 +106,9 @@ export const mediaService = {
         url: result.secure_url,
         publicId: result.public_id,
         mediaType: (opts.mediaType || "IMAGE") as any,
-        title: opts.title || null,
+
         altText: opts.altText || null,
-        description: opts.description || null,
+       
       },
       include: { associations: true },
     });

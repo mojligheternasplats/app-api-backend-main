@@ -24,6 +24,15 @@ const updateHeroSchema = z.object({
   status: z.nativeEnum(HeroStatus).optional(),
 });
 
+function normalizeHeroInput(data: any) {
+  return {
+    ...data,
+    subtitle: data.subtitle ?? undefined,
+    buttonText: data.buttonText ?? undefined,
+    buttonLink: data.buttonLink ?? undefined,
+  };
+}
+
 // Convert ZodError into [{ field, issue }]
 function zodToDetails(err: z.ZodError) {
   return err.issues.map((i) => ({
@@ -96,7 +105,9 @@ export class HeroSectionController {
         });
       }
 
-      const created = await HeroSectionService.createHeroSection(parsed.data);
+      const normalized = normalizeHeroInput(parsed.data);
+
+      const created = await HeroSectionService.createHeroSection(normalized);
       return res.status(201).json({ success: true, data: created });
     } catch (error: any) {
       return res.status(500).json({
@@ -106,10 +117,12 @@ export class HeroSectionController {
     }
   }
 
+
   // PUT /api/hero-sections/:id
   static async updateHeroSection(req: Request, res: Response) {
     try {
       const { id } = req.params;
+
       const parsed = updateHeroSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({
@@ -118,7 +131,9 @@ export class HeroSectionController {
         });
       }
 
-      const updated = await HeroSectionService.updateHeroSection(id, parsed.data);
+      const normalized = normalizeHeroInput(parsed.data);
+
+      const updated = await HeroSectionService.updateHeroSection(id, normalized);
       return res.json({ success: true, data: updated });
     } catch (error: any) {
       return res.status(500).json({

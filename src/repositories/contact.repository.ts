@@ -21,10 +21,23 @@ export class ContactRepository {
     return prisma.contactMessage.findUnique({ where: { id } });
   }
 
-  static async create(data: Omit<ContactMessage, "id" | "createdAt" | "updatedAt" | "status">) {
-    return prisma.contactMessage.create({ data });
-  }
-
+ static async create(data: {
+  name: string;
+  email: string;
+  message: string;
+  subject: string;
+  status?: ContactStatus;
+}) {
+  return prisma.contactMessage.create({
+    data: {
+      name: data.name,
+      email: data.email,
+      message: data.message,
+      subject: data.subject,
+      status: data.status ?? ContactStatus.UNREAD,
+    },
+  });
+}
   static async update(id: string, data: Partial<ContactMessage>) {
     return prisma.contactMessage.update({ where: { id }, data });
   }

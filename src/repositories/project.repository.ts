@@ -9,6 +9,9 @@ interface FindAllParams {
 }
 
 export class ProjectRepository {
+  /** -------------------------------------------
+   *  FIND ALL PROJECTS
+   * ------------------------------------------*/
   static async findAll(params?: FindAllParams) {
     const projects = await prisma.project.findMany({
       skip: params?.skip,
@@ -16,19 +19,23 @@ export class ProjectRepository {
       where: {
         ...(params?.search && {
           OR: [
-            { title: { contains: params.search, mode: "insensitive" } },
-            { description: { contains: params.search, mode: "insensitive" } },
+            {
+              title: { contains: params.search, mode: "insensitive" },
+            },
+            {
+              description: { contains: params.search, mode: "insensitive" },
+            },
           ],
         }),
         ...(params?.category && { category: params.category }),
       },
       orderBy: { order: "asc" },
       include: {
-        creator: true, // ❗ associations removed
+        creator: true,
       },
     });
 
-    // ✅ Attach media for each project
+    // Load media for each project
     return Promise.all(
       projects.map(async (p) => {
         const media = await prisma.mediaAssociation.findMany({
@@ -46,20 +53,29 @@ export class ProjectRepository {
             id: m.media.id,
             url: m.media.url,
             altText: m.media.altText,
-            title: m.media.title,
           })),
         };
       })
     );
   }
 
-  static async count(params?: { search?: string; category?: ProjectCategory }) {
+  /** -------------------------------------------
+   *  COUNT PROJECTS
+   * ------------------------------------------*/
+  static async count(params?: {
+    search?: string;
+    category?: ProjectCategory;
+  }) {
     return prisma.project.count({
       where: {
         ...(params?.search && {
           OR: [
-            { title: { contains: params.search, mode: "insensitive" } },
-            { description: { contains: params.search, mode: "insensitive" } },
+            {
+              title: { contains: params.search, mode: "insensitive" },
+            },
+            {
+              description: { contains: params.search, mode: "insensitive" },
+            },
           ],
         }),
         ...(params?.category && { category: params.category }),
@@ -67,84 +83,158 @@ export class ProjectRepository {
     });
   }
 
+  /** -------------------------------------------
+   *  FIND BY ID
+   * ------------------------------------------*/
   static async findById(id: string) {
-    const p = await prisma.project.findUnique({
+    const project = await prisma.project.findUnique({
       where: { id },
-      include: { creator: true }, // ❗ associations removed
+      include: { creator: true },
     });
 
-    if (!p) return null;
+    if (!project) return null;
 
     const media = await prisma.mediaAssociation.findMany({
-      where: { entityId: p.id, entityType: EntityType.PROJECT },
+      where: {
+        entityId: project.id,
+        entityType: EntityType.PROJECT,
+      },
       include: { media: true },
       orderBy: { order: "asc" },
     });
 
     return {
-      ...p,
+      ...project,
       media: media.map((m) => ({
         id: m.media.id,
         url: m.media.url,
         altText: m.media.altText,
-        title: m.media.title,
       })),
     };
   }
 
+  /** -------------------------------------------
+   *  FIND BY SLUG
+   * ------------------------------------------*/
   static async findBySlug(slug: string) {
-    const p = await prisma.project.findUnique({
+    const project = await prisma.project.findUnique({
       where: { slug },
-      include: { creator: true }, // ❗ associations removed
+      include: { creator: true },
     });
 
-    if (!p) return null;
+    if (!project) return null;
 
     const media = await prisma.mediaAssociation.findMany({
-      where: { entityId: p.id, entityType: EntityType.PROJECT },
+      where: {
+        entityId: project.id,
+        entityType: EntityType.PROJECT,
+      },
       include: { media: true },
       orderBy: { order: "asc" },
     });
 
     return {
-      ...p,
+      ...project,
       media: media.map((m) => ({
         id: m.media.id,
         url: m.media.url,
         altText: m.media.altText,
-        title: m.media.title,
       })),
     };
   }
 
-  static async create(data: {
-    title: string;
-    description?: string;
-    content?: string;
-    language?: string;
-    category?: ProjectCategory;
-    isPublished?: boolean;
-    order?: number;
-    createdById?: string;
-  }) {
-    return prisma.project.create({ data });
+  /** -------------------------------------------
+   *  CREATE PROJECT (fully fixed)
+   * ------------------------------------------*/static async create(data: {
+  title: string;
+  description?: string | null;
+  content?: string | null;
+  language?: string;
+  category?: ProjectCategory;
+  isPublished?: boolean;
+  order?: number;
+  createdById?: string | null;
+}) {
+  const {
+    title,
+    description,
+    content,
+    language,
+    category,
+    isPublished,
+    order,
+    createdById,
+  } = data;
+
+  // Generate base slug
+  const baseSlug = title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+  let slug = baseSlug;
+  let i = 1;
+
+  // Ensure slug is unique
+  while (await prisma.project.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${i++}`;
   }
 
-  static async update(id: string, data: Partial<{
+  return prisma.project.create({
+    data: {
+      title,
+      slug,
+      description: description ?? null,
+      content: content ?? null,
+      language: language ?? "Swedish",
+      category: category ?? ProjectCategory.LOCAL,
+      isPublished: isPublished ?? false,
+      order: order ?? 0,
+
+      ...(createdById
+        ? { creator: { connect: { id: createdById } } }
+        : {}),
+    },
+  });
+}
+
+  /** -------------------------------------------
+   *  UPDATE PROJECT (fully fixed)
+   * ------------------------------------------*/
+  static async update(
+    id: string,
+    data: Partial<{
       title: string;
-      description?: string | null;
-      content?: string | null;
-      language?: string;
-      category?: ProjectCategory;
-      isPublished?: boolean;
-      order?: number;
-      createdById?: string | null;
+      description: string | null;
+      content: string | null;
+      language: string;
+      category: ProjectCategory;
+      isPublished: boolean;
+      order: number;
+      createdById: string | null;
     }>
   ) {
-    return prisma.project.update({ where: { id }, data });
+    const updateData: any = { ...data };
+
+    // Convert createdById → creator.connect
+    if (data.createdById) {
+      updateData.creator = { connect: { id: data.createdById } };
+      delete updateData.createdById;
+    }
+
+    return prisma.project.update({
+      where: { id },
+      data: updateData,
+    });
   }
 
+  /** -------------------------------------------
+   *  DELETE PROJECT
+   * ------------------------------------------*/
   static async delete(id: string) {
-    return prisma.project.delete({ where: { id } });
+    return prisma.project.delete({
+      where: { id },
+    });
   }
 }

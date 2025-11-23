@@ -1,0 +1,134 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.mediaController = void 0;
+const media_service_1 = require("../services/media.service");
+// Helpers
+function ok(res, data, status = 200) {
+    return res.status(status).json(data);
+}
+function bad(res, message = "Bad Request", code = 400) {
+    return res.status(code).json({ message });
+}
+exports.mediaController = {
+    // GET /api/media/gallery
+    async getGallery(req, res) {
+        try {
+            const items = await media_service_1.mediaService.getGallery();
+            return ok(res, items);
+        }
+        catch (e) {
+            return bad(res, e?.message || "Failed to fetch gallery");
+        }
+    },
+    // GET /api/media?entityType=NEWS|EVENT|PROJECT|PARTNER|HERO_SECTION|GALLERY_COMPONENT
+    async getMedia(req, res) {
+        try {
+            const entityType = req.query.entityType || "GALLERY_COMPONENT";
+            const items = await media_service_1.mediaService.getByEntityType(entityType);
+            return ok(res, items);
+        }
+        catch (e) {
+            return bad(res, e?.message || "Failed to fetch media");
+        }
+    },
+    // GET /api/media/all  (optional convenience for admin list without filters)
+    async getAll(req, res) {
+        try {
+            const items = await media_service_1.mediaService.getAll();
+            return ok(res, items);
+        }
+        catch (e) {
+            return bad(res, e?.message || "Failed to fetch all media");
+        }
+    },
+    // POST /api/media/attach
+    // body: { mediaId, entityType, entityId, order? }
+    async attachMedia(req, res) {
+        try {
+            const { mediaId, entityType, entityId, order } = req.body || {};
+            if (!mediaId || !entityType || !entityId) {
+                return bad(res, "mediaId, entityType and entityId are required");
+            }
+            // Single-attach per entity type happens inside service
+            const assoc = await media_service_1.mediaService.attach(mediaId, entityType, entityId, order);
+            return ok(res, assoc, 201);
+        }
+        catch (e) {
+            return bad(res, e?.message || "Failed to attach media");
+        }
+    },
+    // POST /api/media/detach
+    // body: { mediaId, entityType, entityId? } — if entityId omitted, detaches any association for that type
+    async detachMedia(req, res) {
+        try {
+            const { mediaId, entityType, entityId } = req.body || {};
+            if (!mediaId || !entityType) {
+                return bad(res, "mediaId and entityType are required");
+            }
+            const resp = await media_service_1.mediaService.detach(mediaId, entityType, entityId);
+            return ok(res, { success: true, removed: "count" in resp ? resp.count : 1 });
+        }
+        catch (e) {
+            return bad(res, e?.message || "Failed to detach media");
+        }
+    },
+    // POST /api/media/file  (multer single('file') runs before; req.file.path is temp)
+    async uploadFile(req, res) {
+        try {
+            if (!req.file?.path)
+                return bad(res, "No file uploaded");
+            const { altText, entityType, mediaType } = req.body || {};
+            const created = await media_service_1.mediaService.uploadFileAndCreateRecord({
+                localFilePath: req.file.path,
+                altText,
+                entityType,
+                mediaType,
+            });
+            return ok(res, created, 201);
+        }
+        catch (e) {
+            return bad(res, e?.message || "File upload failed");
+        }
+    },
+    // POST /api/media/url  (upload by remote URL)
+    async uploadUrl(req, res) {
+        try {
+            const { url, altText, entityType, mediaType } = req.body || {};
+            if (!url)
+                return bad(res, "url is required");
+            const created = await media_service_1.mediaService.uploadUrlAndCreateRecord({
+                url,
+                altText,
+                entityType,
+                mediaType,
+            });
+            return ok(res, created, 201);
+        }
+        catch (e) {
+            return bad(res, e?.message || "URL upload failed");
+        }
+    },
+    // DELETE /api/media/:id
+    async remove(req, res) {
+        try {
+            const { id } = req.params;
+            if (!id)
+                return bad(res, "id is required");
+            await media_service_1.mediaService.remove(id);
+            return res.status(204).send();
+        }
+        catch (e) {
+            return bad(res, e?.message || "Failed to delete media");
+        }
+    },
+    async getOne(req, res, next) {
+        try {
+            const id = req.params.id;
+            const media = await media_service_1.mediaService.getOne(id);
+            res.json(media);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+};

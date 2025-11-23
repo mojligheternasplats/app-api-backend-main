@@ -86,7 +86,11 @@ app.get("/health", (req, res) => {
     uptime: process.uptime(),
   });
 });
-
+// Ignore favicon requests so they don’t hit the error middleware
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get("/", (req, res) => {
+  res.send("API is running 🚀");
+});
 
 // API routes
 app.use("/api/auth", authRoutes);
