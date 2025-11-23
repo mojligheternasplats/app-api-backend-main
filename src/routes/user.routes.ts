@@ -2,8 +2,8 @@ import { Router } from "express";
 import { getAllUsers ,updateUser, deleteUser } from "../controllers/user.controller";
 import { authMiddleware  } from "../middlewares/auth.middleware";
 import { register } from "../controllers/auth.controller";
-import multer from "multer";
-const upload = multer();
+import { upload } from "../config/multer";
+
 const router = Router();
 
 

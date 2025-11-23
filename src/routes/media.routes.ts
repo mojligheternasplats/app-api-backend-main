@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { mediaController } from "../controllers/media.controller";
-import multer from "multer";
 
-const upload = multer({ dest: "tmp/" });
+
+import { upload } from "../config/multer";
 
 const router = Router();
 

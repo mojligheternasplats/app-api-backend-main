@@ -10,10 +10,8 @@ import {
 
 import { authMiddleware } from "../middlewares/auth.middleware";
 
-// 🔥 You already have this from your media system
-import multer from "multer";
-const upload = multer({ storage: multer.memoryStorage() });
 
+import { upload } from "../config/multer";
 // 🔥 Your new logo upload middleware (from config folder)
 import { uploadPartnerLogo } from "../config/uploadPartnerLogo";
 
