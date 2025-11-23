@@ -3,7 +3,7 @@ import { cloudinary } from "./cloudinary";
 
 export const uploadPartnerLogo = (req: Request, res: Response, next: NextFunction) => {
   if (!req.file) return next(); // no logo uploaded
-
+  console.log(req.file)
   const file = req.file;
 
   const uploadStream = cloudinary.uploader.upload_stream(

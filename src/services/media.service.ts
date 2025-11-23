@@ -1,10 +1,10 @@
 import { prisma } from "../lib/prisma";
 import { cloudinary } from "../config/cloudinary";
-import { EntityType } from "@prisma/client";
-import fs from "fs/promises";
+import { EntityType, MediaType } from "@prisma/client";
 
-
-// Resolve folder based on entity type (affects Cloudinary storage path only)
+/* ------------------------------
+   RESOLVE CLOUDINARY FOLDER
+-------------------------------- */
 function resolveFolder(rawEntityType?: string): string {
   const key = rawEntityType?.toUpperCase() as EntityType | undefined;
 
@@ -24,48 +24,44 @@ function resolveFolder(rawEntityType?: string): string {
 }
 
 export const mediaService = {
-  // Upload from local temp file (multer)
-  async uploadFileAndCreateRecord(opts: {
-    localFilePath: string;
+  /* ------------------------------
+      CREATE RECORD AFTER UPLOAD
+      (uploadMedia middleware already did Cloudinary upload)
+  -------------------------------- */
+  async createRecord(opts: {
+    url: string;
+    publicId: string;
     entityType?: string;
     altText?: string;
-    mediaType: string; // "IMAGE" or "VIDEO"
+    mediaType: MediaType;
   }) {
-    const folder = resolveFolder(opts.entityType);
-
-    const result = await cloudinary.uploader.upload(opts.localFilePath, {
-      folder,
-      resource_type: "image",
-      unique_filename: true,
-      overwrite: false,
-    });
-
-    try {
-      await fs.unlink(opts.localFilePath);
-    } catch {}
-
     return prisma.media.create({
       data: {
-        url: result.secure_url,
-        publicId: result.public_id,
-        altText: result.altText,
-        mediaType: "IMAGE",
+        url: opts.url,
+        publicId: opts.publicId,
+        altText: opts.altText ?? null,
+        mediaType: opts.mediaType,
       },
     });
   },
 
-  // Upload from remote URL
+  /* ------------------------------
+      UPLOAD FROM URL
+  -------------------------------- */
   async uploadUrlAndCreateRecord(opts: {
     url: string;
     entityType?: string;
     altText?: string;
-    mediaType: string;
+    mediaType: MediaType;
   }) {
     const folder = resolveFolder(opts.entityType);
 
+    const resourceType =
+      opts.mediaType === MediaType.VIDEO ? "video" : "image";
+
     const result = await cloudinary.uploader.upload(opts.url, {
       folder,
-      resource_type: "image",
+      resource_type: resourceType,
       unique_filename: true,
       overwrite: false,
     });
@@ -74,13 +70,15 @@ export const mediaService = {
       data: {
         url: result.secure_url,
         publicId: result.public_id,
-        altText: result.altText,
-        mediaType: "IMAGE",
+        altText: opts.altText ?? null,
+        mediaType: opts.mediaType,
       },
     });
   },
 
-  // Gallery = all media not linked OR linked to GALLERY_COMPONENT
+  /* ------------------------------
+      GALLERY
+  -------------------------------- */
   async getGallery() {
     const items = await prisma.media.findMany({
       orderBy: { createdAt: "desc" },
@@ -94,7 +92,9 @@ export const mediaService = {
     );
   },
 
-  // Fetch only linked media for entity
+  /* ------------------------------
+      GET MEDIA BY ENTITY TYPE
+  -------------------------------- */
   async getByEntityType(entityType: string) {
     const key = entityType.toUpperCase() as EntityType;
 
@@ -107,7 +107,9 @@ export const mediaService = {
     });
   },
 
-  // Attach
+  /* ------------------------------
+      ATTACH MEDIA
+  -------------------------------- */
   async attach(mediaId: string, entityType: string, entityId: string, order?: number) {
     return prisma.mediaAssociation.create({
       data: {
@@ -119,7 +121,9 @@ export const mediaService = {
     });
   },
 
-  // Get one
+  /* ------------------------------
+      GET ONE MEDIA
+  -------------------------------- */
   async getOne(id: string) {
     const media = await prisma.media.findUnique({
       where: { id },
@@ -134,7 +138,9 @@ export const mediaService = {
     return media;
   },
 
-  // Get all
+  /* ------------------------------
+      GET ALL MEDIA
+  -------------------------------- */
   async getAll() {
     return prisma.media.findMany({
       orderBy: { createdAt: "desc" },
@@ -142,7 +148,9 @@ export const mediaService = {
     });
   },
 
-  // Detach
+  /* ------------------------------
+      DETACH MEDIA
+  -------------------------------- */
   async detach(mediaId: string, entityType: string, entityId: string) {
     return prisma.mediaAssociation.delete({
       where: {
@@ -155,7 +163,9 @@ export const mediaService = {
     });
   },
 
-  // Remove media + Cloudinary + associations
+  /* ------------------------------
+      REMOVE MEDIA
+  -------------------------------- */
   async remove(mediaId: string) {
     const media = await prisma.media.findUnique({ where: { id: mediaId } });
 
@@ -164,7 +174,7 @@ export const mediaService = {
         await cloudinary.uploader.destroy(media.publicId, {
           resource_type: "image",
         });
-      } catch {}
+      } catch { }
     }
 
     await prisma.mediaAssociation.deleteMany({ where: { mediaId } });

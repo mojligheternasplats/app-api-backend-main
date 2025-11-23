@@ -20,7 +20,7 @@ export const mediaController = {
     }
   },
 
-  // GET /api/media?entityType=NEWS|EVENT|PROJECT|PARTNER|HERO_SECTION|GALLERY_COMPONENT
+  // GET /api/media?entityType=NEWS|EVENT|PROJECT|PARTNER|GALLERY_COMPONENT
   async getMedia(req: Request, res: Response) {
     try {
       const entityType = (req.query.entityType as string) || "GALLERY_COMPONENT";
@@ -31,7 +31,7 @@ export const mediaController = {
     }
   },
 
-  // GET /api/media/all  (optional convenience for admin list without filters)
+  // GET /api/media/all
   async getAll(req: Request, res: Response) {
     try {
       const items = await mediaService.getAll();
@@ -41,16 +41,24 @@ export const mediaController = {
     }
   },
 
+  // GET /api/media/:id
+  async getOne(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id;
+      const media = await mediaService.getOne(id);
+      return ok(res, media);
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // POST /api/media/attach
-  // body: { mediaId, entityType, entityId, order? }
   async attachMedia(req: Request, res: Response) {
     try {
       const { mediaId, entityType, entityId, order } = req.body || {};
       if (!mediaId || !entityType || !entityId) {
         return bad(res, "mediaId, entityType and entityId are required");
       }
-
-      // Single-attach per entity type happens inside service
       const assoc = await mediaService.attach(mediaId, entityType, entityId, order);
       return ok(res, assoc, 201);
     } catch (e: any) {
@@ -59,7 +67,6 @@ export const mediaController = {
   },
 
   // POST /api/media/detach
-  // body: { mediaId, entityType, entityId? } — if entityId omitted, detaches any association for that type
   async detachMedia(req: Request, res: Response) {
     try {
       const { mediaId, entityType, entityId } = req.body || {};
@@ -73,13 +80,17 @@ export const mediaController = {
     }
   },
 
-  // POST /api/media/file  (multer single('file') runs before; req.file.path is temp)
+  // POST /api/media/file
+  // uploadMedia middleware already streams to Cloudinary and injects url/publicId/mediaType
   async uploadFile(req: Request, res: Response) {
     try {
-      if (!req.file?.path) return bad(res, "No file uploaded");
-      const {altText, entityType, mediaType } = req.body || {};
-      const created = await mediaService.uploadFileAndCreateRecord({
-        localFilePath: req.file.path,
+      const { url, publicId, altText, entityType, mediaType } = req.body || {};
+      if (!url || !publicId || !mediaType) {
+        return bad(res, "Upload failed: missing Cloudinary data");
+      }
+      const created = await mediaService.createRecord({
+        url,
+        publicId,
         altText,
         entityType,
         mediaType,
@@ -90,18 +101,17 @@ export const mediaController = {
     }
   },
 
-  // POST /api/media/url  (upload by remote URL)
+  // POST /api/media/url
   async uploadUrl(req: Request, res: Response) {
     try {
-      const { url, altText,  entityType, mediaType } = req.body || {};
+      const { url, altText, entityType, mediaType } = req.body || {};
       if (!url) return bad(res, "url is required");
-  const created = await mediaService.uploadUrlAndCreateRecord({
-  url,
-  altText,
-  entityType,
-  mediaType,
-});
-
+      const created = await mediaService.uploadUrlAndCreateRecord({
+        url,
+        altText,
+        entityType,
+        mediaType,
+      });
       return ok(res, created, 201);
     } catch (e: any) {
       return bad(res, e?.message || "URL upload failed");
@@ -119,13 +129,4 @@ export const mediaController = {
       return bad(res, e?.message || "Failed to delete media");
     }
   },
-async getOne(req: Request, res: Response, next: NextFunction) {
-    try {
-      const id = req.params.id;
-      const media = await mediaService.getOne(id);
-      res.json(media);
-    } catch (error) {
-      next(error);
-    }
-  }
-}
+};

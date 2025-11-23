@@ -2,6 +2,8 @@ import slugify from "slugify";
 import { prisma } from "../lib/prisma";
 import { PartnerRepository } from "../repositories/partner.repository";
 
+
+
 export class PartnerService {
   // ---------------------------
   // GET ALL
