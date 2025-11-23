@@ -2,7 +2,7 @@ import app from './app';
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-const port = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
@@ -10,9 +10,9 @@ async function startServer() {
     await prisma.$connect();
     console.log("✅ Database connected successfully!");
 
-    app.listen(port, () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
-      console.log(`🏥 Health check → http://localhost:${port}/health`);
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🏥 Health check → /health`);
     });
 
   } catch (error) {

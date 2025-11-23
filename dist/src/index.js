@@ -6,15 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
-const port = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 async function startServer() {
     try {
         // Test DB connection
         await prisma.$connect();
         console.log("✅ Database connected successfully!");
-        app_1.default.listen(port, () => {
-            console.log(`🚀 Server running on http://localhost:${port}`);
-            console.log(`🏥 Health check → http://localhost:${port}/health`);
+        app_1.default.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+            console.log(`🏥 Health check → /health`);
         });
     }
     catch (error) {
