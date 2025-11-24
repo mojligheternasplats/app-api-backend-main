@@ -129,6 +129,7 @@ CREATE TABLE "Media" (
     "mediaType" "MediaType" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "altText" TEXT,
 
     CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
 );

@@ -1,1 +1,76 @@
 node_modules
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+tmp/
+temp/
+
+# Environment variables (never commit!)
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/test.db
+prisma/test.db-journal
+prisma/*.db
+prisma/*.sqlite
+
+# Prisma Client Generated Code
+node_modules/@prisma/client/
+
+# Logs
+logs
+*.log
+*.log.*
+log.txt
+
+# Debug logs
+*.pid
+*.seed
+*.pid.lock
+
+# Uploads (keep out of Git)
+uploads/
+public/uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# Next.js (for your admin or public frontend)
+.next/
+out/
+.next/cache/
+.next/static/
+
+# Typescript cache
+*.tsbuildinfo
+
+# Cache
+.cache/
+coverage/
+.nyc_output/
+
+# Docker
+docker-data/
+docker-compose.override.yml
+
+# Misc
+*.local
+*.bak
+*.old

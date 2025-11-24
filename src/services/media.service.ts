@@ -166,18 +166,44 @@ export const mediaService = {
   /* ------------------------------
       REMOVE MEDIA
   -------------------------------- */
+  /* ------------------------------
+     REMOVE MEDIA COMPLETELY
+ -------------------------------- */
   async remove(mediaId: string) {
     const media = await prisma.media.findUnique({ where: { id: mediaId } });
 
-    if (media?.publicId) {
-      try {
-        await cloudinary.uploader.destroy(media.publicId, {
-          resource_type: "image",
-        });
-      } catch { }
+    if (!media) {
+      throw new Error("Media not found");
     }
 
-    await prisma.mediaAssociation.deleteMany({ where: { mediaId } });
-    await prisma.media.delete({ where: { id: mediaId } });
-  },
+    /* ------------------------------
+        DELETE FROM CLOUDINARY
+    -------------------------------- */
+    if (media.publicId) {
+      try {
+        await cloudinary.uploader.destroy(media.publicId, {
+          resource_type: "auto", // supports image, video, pdf, raw
+        });
+      } catch (err) {
+        console.error("❌ Cloudinary delete error:", err);
+      }
+    }
+
+    /* ------------------------------
+        DELETE ASSOCIATIONS
+    -------------------------------- */
+    await prisma.mediaAssociation.deleteMany({
+      where: { mediaId },
+    });
+
+    /* ------------------------------
+        DELETE MEDIA RECORD
+    -------------------------------- */
+    await prisma.media.delete({
+      where: { id: mediaId },
+    });
+
+    return { success: true };
+  }
+
 };

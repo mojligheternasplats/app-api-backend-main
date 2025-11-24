@@ -30,12 +30,22 @@ const app: Application = express();
 
 
 const allowedOrigins = [
+  // Local development
   "http://localhost:5173",
   "http://localhost:9002",
   "http://localhost:9003",
+
+  // Public website
   "https://mplats.se",
   "https://www.mplats.se",
+
+  // Admin Panel
   "https://admin.mplats.se",
+
+  // API domain (🚨 REQUIRED)
+  "https://api.mplats.se",
+
+  // Railway domains
   "https://app-api-backend-main-production.up.railway.app",
   "https://app-admin-panel-main-production.up.railway.app",
   "https://app-public-main-production.up.railway.app",
@@ -53,6 +63,9 @@ app.use(
     credentials: true,
   })
 );
+
+// Handles preflight requests
+app.options("*", cors());
 
 
 
