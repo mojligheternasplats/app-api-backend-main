@@ -51,23 +51,31 @@ const allowedOrigins = [
   "https://app-public-main-production.up.railway.app",
 ];
 
-
 app.use(
   cors({
-    origin: function (origin, cb) {
-      console.log("🔥 CORS request from:", origin);  // <-- required
-      if (!origin || allowedOrigins.includes(origin)) {
-        return cb(null, true);
+    origin: function (origin, callback) {
+      console.log("🔥 CORS request from:", origin);
+
+      // Allow requests with no origin (mobile apps, server-side, internal health checks)
+      if (!origin) {
+        console.log("🟢 Allowing request with no origin");
+        return callback(null, true);
       }
+
+      // Allow approved frontend origins
+      if (allowedOrigins.includes(origin)) {
+        console.log("🟢 CORS allowed:", origin);
+        return callback(null, true);
+      }
+
+      // Block everything else
       console.error("❌ CORS blocked:", origin);
-      return cb(new Error("Not allowed by CORS: " + origin));
+      return callback(new Error("Not allowed by CORS: " + origin));
     },
     credentials: true,
   })
 );
 
-
-// Handles preflight requests
 app.options("*", cors());
 
 
