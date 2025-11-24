@@ -29,48 +29,33 @@ const app: Application = express();
 
 
 
-
 const allowedOrigins = [
-  // Local development
   "http://localhost:5173",
   "http://localhost:9002",
   "http://localhost:9003",
-
-  // Public website
   "https://mplats.se",
   "https://www.mplats.se",
-
-  // Admin dashboard
   "https://admin.mplats.se",
-
-  // Railway public domains
   "https://app-api-backend-main-production.up.railway.app",
   "https://app-admin-panel-main-production.up.railway.app",
   "https://app-public-main-production.up.railway.app",
 ];
 
+
 app.use(
   cors({
     origin: function (origin, cb) {
-      if (!origin) return cb(null, true); // allow mobile apps, postman, server-side
-      if (allowedOrigins.includes(origin)) return cb(null, true);
-      return cb(new Error("❌ CORS blocked: " + origin));
+      if (!origin || allowedOrigins.includes(origin)) {
+        return cb(null, true);
+      }
+      return cb(new Error("Not allowed by CORS: " + origin));
     },
     credentials: true,
   })
 );
 
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
+
 //app.use(morgan("combined"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -124,14 +109,16 @@ app.get("/", (req, res) => {
 });
 
 // API routes
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/authPassword", authPasswordRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/partners", partnerRoutes);
 // ...Forgot Password and Reset Password
-app.use("/api/auth", authPasswordRoutes);
+
 // end
 app.use("/api/events", eventRoutes);
 app.use("/api/contact", contactRoutes);
