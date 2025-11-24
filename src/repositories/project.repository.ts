@@ -145,8 +145,10 @@ export class ProjectRepository {
 
   /** -------------------------------------------
    *  CREATE PROJECT (fully fixed)
-   * ------------------------------------------*/static async create(data: {
+   * ------------------------------------------*/
+static async create(data: {
   title: string;
+  slug?: string; // <-- add this
   description?: string | null;
   content?: string | null;
   language?: string;
@@ -157,6 +159,7 @@ export class ProjectRepository {
 }) {
   const {
     title,
+    slug: incomingSlug,
     description,
     content,
     language,
@@ -166,25 +169,32 @@ export class ProjectRepository {
     createdById,
   } = data;
 
-  // Generate base slug
-  const baseSlug = title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+  let slug = incomingSlug?.trim().toLowerCase() || null;
 
-  let slug = baseSlug;
-  let i = 1;
+  // If frontend did not provide slug → generate one
+  if (!slug || slug === "") {
+    const baseSlug = title
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+
+    slug = baseSlug;
+  }
 
   // Ensure slug is unique
-  while (await prisma.project.findUnique({ where: { slug } })) {
-    slug = `${baseSlug}-${i++}`;
+  let uniqueSlug = slug;
+  let i = 1;
+
+  while (await prisma.project.findUnique({ where: { slug: uniqueSlug } })) {
+    uniqueSlug = `${slug}-${i++}`;
   }
 
   return prisma.project.create({
     data: {
       title,
-      slug,
+      slug: uniqueSlug,  // <-- use final slug
       description: description ?? null,
       content: content ?? null,
       language: language ?? "Swedish",
@@ -202,32 +212,63 @@ export class ProjectRepository {
   /** -------------------------------------------
    *  UPDATE PROJECT (fully fixed)
    * ------------------------------------------*/
-  static async update(
-    id: string,
-    data: Partial<{
-      title: string;
-      description: string | null;
-      content: string | null;
-      language: string;
-      category: ProjectCategory;
-      isPublished: boolean;
-      order: number;
-      createdById: string | null;
-    }>
-  ) {
-    const updateData: any = { ...data };
+ static async update(
+  id: string,
+  data: Partial<{
+    title: string;
+    slug: string; // <-- add this line
+    description: string | null;
+    content: string | null;
+    language: string;
+    category: ProjectCategory;
+    isPublished: boolean;
+    order: number;
+    createdById: string | null;
+  }>
+) {
+  const updateData: any = { ...data };
 
-    // Convert createdById → creator.connect
-    if (data.createdById) {
-      updateData.creator = { connect: { id: data.createdById } };
-      delete updateData.createdById;
-    }
-
-    return prisma.project.update({
-      where: { id },
-      data: updateData,
-    });
+  // Handle creator field
+  if (data.createdById) {
+    updateData.creator = { connect: { id: data.createdById } };
+    delete updateData.createdById;
   }
+
+  // ---------- SLUG LOGIC (IMPORTANT) ----------
+  if (typeof data.slug !== "undefined") {
+    let incomingSlug = data.slug?.trim().toLowerCase() || "";
+
+    if (incomingSlug !== "") {
+      // Ensure slug is unique
+      let finalSlug = incomingSlug;
+      let i = 1;
+
+      while (
+        await prisma.project.findFirst({
+          where: {
+            slug: finalSlug,
+            id: { not: id },      // <-- don't count this project itself
+          },
+        })
+      ) {
+        finalSlug = `${incomingSlug}-${i++}`;
+      }
+
+      updateData.slug = finalSlug;
+    } else {
+      // If empty, do NOT overwrite slug
+      delete updateData.slug;
+    }
+  }
+
+  // ---------- END OF SLUG LOGIC ----------
+
+  return prisma.project.update({
+    where: { id },
+    data: updateData,
+  });
+}
+
 
   /** -------------------------------------------
    *  DELETE PROJECT
