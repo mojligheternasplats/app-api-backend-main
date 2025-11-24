@@ -55,14 +55,17 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, cb) {
+      console.log("🔥 CORS request from:", origin);  // <-- required
       if (!origin || allowedOrigins.includes(origin)) {
         return cb(null, true);
       }
+      console.error("❌ CORS blocked:", origin);
       return cb(new Error("Not allowed by CORS: " + origin));
     },
     credentials: true,
   })
 );
+
 
 // Handles preflight requests
 app.options("*", cors());
