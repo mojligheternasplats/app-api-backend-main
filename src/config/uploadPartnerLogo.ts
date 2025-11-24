@@ -2,13 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import { cloudinary } from "./cloudinary";
 
 export const uploadPartnerLogo = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.file) return next(); // no logo uploaded
-  console.log(req.file)
+  if (!req.file) return next();
+
   const file = req.file;
 
   const uploadStream = cloudinary.uploader.upload_stream(
     {
-      folder: "partners/logos", // folder is optional but recommended
+      folder: "partners",  // <-- FIXED HERE
     },
     (error, result) => {
       if (error) return next(error);
