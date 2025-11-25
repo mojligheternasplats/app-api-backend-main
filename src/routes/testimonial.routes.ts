@@ -4,40 +4,38 @@ import multer from "multer";
 import { TestimonialController } from "../controllers/testimonial.controller";
 import { uploadTestimonialImage } from "../config/uploadTestimonialImage";
 import { upload } from "../config/multer";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-
-// ------------------
-// PUBLIC ROUTE
-// ------------------
+// ----------------------
+// PUBLIC
+// ----------------------
 router.get("/", TestimonialController.getPublic);
 
-// ------------------
-// ADMIN ROUTES
-// ------------------
-router.get("/admin", TestimonialController.getAdmin);
+// ----------------------
+// ADMIN — PROTECTED
+// ----------------------
+router.get("/admin", authMiddleware, TestimonialController.getAdmin);
 
-// CREATE testimonial (with image)
 router.post(
   "/",
-  upload.single("image"),       // ← file from admin panel
-  uploadTestimonialImage,       // ← uploads to Cloudinary
+  authMiddleware,
+  upload.single("image"),
+  uploadTestimonialImage,
   TestimonialController.create
 );
 
-// UPDATE testimonial (with optional image)
 router.put(
   "/:id",
+  authMiddleware,
   upload.single("image"),
   uploadTestimonialImage,
   TestimonialController.update
 );
 
-// DELETE testimonial
-router.delete("/:id", TestimonialController.delete);
+router.delete("/:id", authMiddleware, TestimonialController.delete);
 
-// TOGGLE publish/unpublish
-router.patch("/:id/publish", TestimonialController.togglePublish);
+router.patch("/:id/publish", authMiddleware, TestimonialController.togglePublish);
 
 export default router;
