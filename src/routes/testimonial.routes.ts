@@ -1,41 +1,37 @@
 import { Router } from "express";
-
+import multer from "multer";
 
 import { TestimonialController } from "../controllers/testimonial.controller";
 import { uploadTestimonialImage } from "../config/uploadTestimonialImage";
 import { upload } from "../config/multer";
-import { authMiddleware } from "../middlewares/auth.middleware";
+import { normalizeTestimonial } from "../middlewares/normalizeTestimonial";
 
 const router = Router();
 
-// ----------------------
-// PUBLIC
-// ----------------------
+// Public
 router.get("/", TestimonialController.getPublic);
 
-// ----------------------
-// ADMIN — PROTECTED
-// ----------------------
-router.get("/admin", authMiddleware, TestimonialController.getAdmin);
+// Admin
+router.get("/admin", TestimonialController.getAdmin);
 
 router.post(
   "/",
-  authMiddleware,
   upload.single("image"),
+  normalizeTestimonial,
   uploadTestimonialImage,
   TestimonialController.create
 );
 
 router.put(
   "/:id",
-  authMiddleware,
   upload.single("image"),
+  normalizeTestimonial,
   uploadTestimonialImage,
   TestimonialController.update
 );
 
-router.delete("/:id", authMiddleware, TestimonialController.delete);
+router.delete("/:id", TestimonialController.delete);
 
-router.patch("/:id/publish", authMiddleware, TestimonialController.togglePublish);
+router.patch("/:id/publish", TestimonialController.togglePublish);
 
 export default router;

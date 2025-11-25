@@ -17,35 +17,26 @@ export class TestimonialController {
 
   // CREATE testimonial + image
   static async create(req: Request, res: Response) {
-    const payload = {
-      name: req.body.name,
-      age: Number(req.body.age),
-      message: req.body.message,
-      program: req.body.program,
-      imageUrl: req.body.imageUrl ?? null,
-      imagePublicId: req.body.imagePublicId ?? null,
-      isPublished: req.body.isPublished ?? true,
-    };
+  if (req.body.isPublished === "true") req.body.isPublished = true;
+  if (req.body.isPublished === "false") req.body.isPublished = false;
 
-    const newItem = await TestimonialService.createTestimonial(payload);
-    res.status(201).json(newItem);
-  }
+  const newItem = await TestimonialService.createTestimonial(req.body);
+  res.status(201).json(newItem);
+}
+
 
   // UPDATE testimonial + image (optional)
   static async update(req: Request, res: Response) {
-    const payload = {
-      name: req.body.name,
-      age: Number(req.body.age),
-      message: req.body.message,
-      program: req.body.program,
-      imageUrl: req.body.imageUrl ?? undefined,
-      imagePublicId: req.body.imagePublicId ?? undefined,
-      isPublished: req.body.isPublished,
-    };
+  if (req.body.isPublished === "true") req.body.isPublished = true;
+  if (req.body.isPublished === "false") req.body.isPublished = false;
 
-    const updated = await TestimonialService.updateTestimonial(req.params.id, payload);
-    res.json(updated);
-  }
+  const updated = await TestimonialService.updateTestimonial(
+    req.params.id,
+    req.body
+  );
+  res.json(updated);
+}
+
 
   // DELETE testimonial + Cloudinary image
   static async delete(req: Request, res: Response) {
