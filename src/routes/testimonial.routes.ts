@@ -1,5 +1,5 @@
 import { Router } from "express";
-import multer from "multer";
+
 
 import { TestimonialController } from "../controllers/testimonial.controller";
 import { uploadTestimonialImage } from "../config/uploadTestimonialImage";
