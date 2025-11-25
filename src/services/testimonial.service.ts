@@ -18,7 +18,7 @@ export class TestimonialService {
   }
 
   static async deleteTestimonial(id: string) {
-    return TestimonialRepository.delete(id);
+    return TestimonialRepository.delete(id);   // <-- Now also deletes Cloudinary image
   }
 
   static async togglePublish(id: string, publish: boolean) {

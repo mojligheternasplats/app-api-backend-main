@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { cloudinary } from "../config/cloudinary";
 
 export class TestimonialRepository {
   static async findAll() {
@@ -25,7 +26,29 @@ export class TestimonialRepository {
     });
   }
 
+  /** ---------------------------------
+   *  DELETE testimonial + Cloudinary image
+   * ---------------------------------- */
   static async delete(id: string) {
+    // 1. Get testimonial
+    const testimonial = await prisma.youthTestimonial.findUnique({
+      where: { id },
+    });
+
+    if (!testimonial) return null;
+
+    // 2. Remove Cloudinary image (if exists)
+    if (testimonial.imagePublicId) {
+      try {
+        await cloudinary.uploader.destroy(testimonial.imagePublicId, {
+          resource_type: "image",
+        });
+      } catch (error) {
+        console.error("Cloudinary delete failed:", error);
+      }
+    }
+
+    // 3. Delete DB record
     return prisma.youthTestimonial.delete({
       where: { id },
     });
