@@ -8,7 +8,11 @@ export const uploadPartnerLogo = (req: Request, res: Response, next: NextFunctio
 
   const uploadStream = cloudinary.uploader.upload_stream(
     {
-      folder: "partners",  // <-- FIXED HERE
+      folder: "partners",
+      overwrite: false,         // 🔥 required to match preset defaults
+      use_filename: false,      // 🔥 override preset (avoid mismatch)
+      unique_filename: true,    // 🔥 match preset default
+      resource_type: "image",
     },
     (error, result) => {
       if (error) return next(error);
