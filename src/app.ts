@@ -29,54 +29,44 @@ const app: Application = express();
 
 
 
-const allowedOrigins = [
-  // Local development
-  "http://localhost:5173",
-  "http://localhost:9002",
-  "http://localhost:9003",
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
 
-  // Public website
-  "https://mplats.se",
-  "https://www.mplats.se",
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:9002",
+    "http://localhost:9003",
+    "https://mplats.se",
+    "https://www.mplats.se",
+    "https://admin.mplats.se",
+    "https://api.mplats.se",
+    "https://app-api-backend-main-production.up.railway.app",
+    "https://app-admin-panel-main-production.up.railway.app",
+    "https://app-public-main-production.up.railway.app",
+  ];
 
-  // Admin Panel
-  "https://admin.mplats.se",
+  console.log("🔥 CORS request from:", origin);
 
-  // API domain (🚨 REQUIRED)
-  "https://api.mplats.se",
+  if (!origin || allowedOrigins.includes(origin)) {
+    console.log("🟢 CORS allowed:", origin);
+    res.header("Access-Control-Allow-Origin", origin || "*");
+  } else {
+    console.log("❌ CORS blocked:", origin);
+  }
 
-  // Railway domains
-  "https://app-api-backend-main-production.up.railway.app",
-  "https://app-admin-panel-main-production.up.railway.app",
-  "https://app-public-main-production.up.railway.app",
-];
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      console.log("🔥 CORS request from:", origin);
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
 
-      // Allow requests with no origin (mobile apps, server-side, internal health checks)
-      if (!origin) {
-        console.log("🟢 Allowing request with no origin");
-        return callback(null, true);
-      }
+  next();
+});
 
-      // Allow approved frontend origins
-      if (allowedOrigins.includes(origin)) {
-        console.log("🟢 CORS allowed:", origin);
-        return callback(null, true);
-      }
 
-      // Block everything else
-      console.error("❌ CORS blocked:", origin);
-      return callback(new Error("Not allowed by CORS: " + origin));
-    },
-    credentials: true,
-  })
-);
 
-app.options("*", cors());
 
 
 
