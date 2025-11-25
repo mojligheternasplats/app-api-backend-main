@@ -33,7 +33,7 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
 
   const allowedOrigins = [
-    "http://localhost:5173",
+    "https://mojligheternas-platsv2-main.vercel.app",
     "http://localhost:9002",
     "http://localhost:9003",
     "https://mplats.se",
