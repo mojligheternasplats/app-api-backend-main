@@ -40,9 +40,7 @@ app.use((req, res, next) => {
     "https://www.mplats.se",
     "https://admin.mplats.se",
     "https://api.mplats.se",
-    "https://app-api-backend-main-production.up.railway.app",
-    "https://app-admin-panel-main-production.up.railway.app",
-    "https://app-public-main-production.up.railway.app",
+    "https://app-admin-panel-main.vercel.app"
   ];
 
   console.log("🔥 CORS request from:", origin);
