@@ -1,21 +1,22 @@
-import { Router } from "express";
-import { AuthService } from "../services/mail.service";
+import { Router, Request, Response } from "express";
+import { AuthService } from "../services/mail.service"; // Fixed path here
 
 const router = Router();
 
 /**
- * @route POST /api/auth/forgot-password
- * Public - User requests password reset
+ * @route   POST /api/authPassword/forgot-password
+ * @desc    Public - User requests password reset link
  */
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 
-    if (!email)
+    if (!email) {
       return res.status(400).json({
         success: false,
         message: "Email is required",
       });
+    }
 
     const result = await AuthService.forgotPassword(email);
 
@@ -24,24 +25,25 @@ router.post("/forgot-password", async (req, res) => {
     console.error("Forgot password error:", error);
     return res.status(500).json({
       success: false,
-      message: "Something went wrong while requesting reset password",
+      message: "Something went wrong while requesting password reset",
     });
   }
 });
 
 /**
- * @route POST /api/auth/reset-password
- * Public - User submits new password with token
+ * @route   POST /api/authPassword/reset-password
+ * @desc    Public - User submits new password using token
  */
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", async (req: Request, res: Response) => {
   try {
     const { token, password } = req.body;
 
-    if (!token || !password)
+    if (!token || !password) {
       return res.status(400).json({
         success: false,
         message: "Token and new password are required",
       });
+    }
 
     const result = await AuthService.resetPassword(token, password);
 

@@ -21,6 +21,7 @@ import eventRegistrationRoutes from "./routes/eventRegistration.routes";
 // import { sendMail } from "./utils/mailService";
 import authPasswordRoutes from "./routes/authPassword.routes";
 import testimonialRoutes from "./routes/testimonial.routes";
+import { sendMail } from "./utils/mailService";
 
 
 dotenv.config();
@@ -105,7 +106,30 @@ app.use("/uploads", express.static(uploadsDir, {
 //   }
 // }
 
-// testMail();
+// testMail();// mail service
+/*async function testMail() {
+  try {
+    const info = await sendMail(
+      "hussein.abdi.gele@gmail.com",
+      "Test från backend",
+      "Hej! Det här är ett testmejl."
+    );
+    console.log("✅ Mail skickat:", info.messageId);
+  } catch (err) {
+    console.error("❌ Mail error:", err);
+  }
+}
+
+testMail();
+*/
+
+// Health check
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
 // Health check
 app.get("/health", (req, res) => {
   res.status(200).json({
