@@ -27,13 +27,17 @@ class ProjectController {
     res.json({ data: project });
   }
 
-  async getBySlug(req: Request, res: Response) {
+ async getBySlug(req: Request, res: Response) {
+  try {
     const { slug } = req.params;
     const project = await ProjectService.getBySlug(slug);
     if (!project) return res.status(404).json({ error: "Project not found" });
     res.json({ data: project });
+  } catch (error: any) {
+    console.error("❌ Error fetching project by slug:", error.message);
+    res.status(500).json({ error: "Failed to fetch project" });
   }
-
+}
   async create(req: Request, res: Response) {
     try {
       const project = await ProjectService.createProject(req.body);
