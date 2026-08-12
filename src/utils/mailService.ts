@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Initialize Resend with your API key from Railway / .env
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendMail(
@@ -13,19 +12,22 @@ export async function sendMail(
   html?: string
 ) {
   try {
-    // 💡 While testing on the free Resend tier, use "onboarding@resend.dev"
-    // (Note: On the free tier without a custom domain verified in Resend, 
-    // you can only send emails to the email address you registered your Resend account with)
-    const data = await resend.emails.send({
-      from: "Mplats <onboarding@resend.dev>",
+    const response = await resend.emails.send({
+      from: "Mplats <noreply@mplats.se>",
       to: [to],
       subject,
       text,
       html: html || text,
     });
 
-    console.log("✅ Email sent via Resend:", data);
-    return data;
+    // Resend SDK returns { data, error } instead of always throwing an exception
+    if (response.error) {
+      console.error("❌ Resend API Returned Error:", response.error);
+      throw new Error(response.error.message);
+    }
+
+    console.log("✅ Email sent via Resend:", response.data);
+    return response.data;
   } catch (error) {
     console.error("❌ Resend error:", error);
     throw error;
