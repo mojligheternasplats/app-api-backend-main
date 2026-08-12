@@ -17,7 +17,7 @@ export class AuthService {
 
     // Generate token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    console.log("🔑 Your Plain Reset Token:", resetToken);
+    //console.log("🔑 Your Plain Reset Token:", resetToken);
     // Hash token before storing in DB
     const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
 
@@ -53,7 +53,7 @@ export class AuthService {
         `
       );
     } catch (mailError) {
-      console.error("Failed to send password reset email:", mailError);
+      //console.error("Failed to send password reset email:", mailError);
       // Still return success to prevent user enumeration
     }
 

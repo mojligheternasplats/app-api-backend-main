@@ -90,38 +90,22 @@ app.use("/uploads", express.static(uploadsDir, {
   },
 }));
 
+
 // mail service
-
-
-// async function testMail() {
-//   try {
-//     const info = await sendMail(
-//       "elmsgele@gmail.com",
-//       "Test från backend",
-//       "Hej! Det här är ett testmejl."
-//     );
-//     console.log("✅ Mail skickat:", info.messageId);
-//   } catch (err) {
-//     console.error("❌ Mail error:", err);
-//   }
-// }
-
-// testMail();// mail service
 /*async function testMail() {
   try {
     const info = await sendMail(
-      "hussein.abdi.gele@gmail.com",
-      "Test från backend",
-      "Hej! Det här är ett testmejl."
+      "mplats1988@gmail.com", // 👈 Use your registered Resend email here
+      "Test från backend via Resend",
+      "Hej! Det här är ett testmejl skickat från Railway."
     );
-    console.log("✅ Mail skickat:", info.messageId);
+    console.log("✅ Mail skickat:", info);
   } catch (err) {
     console.error("❌ Mail error:", err);
   }
 }
 
-testMail();
-*/
+testMail();*/
 
 // Health check
 app.get("/health", (req, res) => {
