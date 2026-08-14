@@ -148,26 +148,28 @@ export class ProjectRepository {
    * ------------------------------------------*/
 static async create(data: {
   title: string;
-  slug?: string; // <-- add this
+  slug?: string;
   description?: string | null;
   content?: string | null;
   language?: string;
   category?: ProjectCategory;
+  program?: string | null;
   isPublished?: boolean;
   order?: number;
   createdById?: string | null;
 }) {
   const {
-    title,
-    slug: incomingSlug,
-    description,
-    content,
-    language,
-    category,
-    isPublished,
-    order,
-    createdById,
-  } = data;
+  title,
+  slug: incomingSlug,
+  description,
+  content,
+  language,
+  category,
+  isPublished,
+  order,
+  program,
+  createdById,
+} = data;
 
   let slug = incomingSlug?.trim().toLowerCase() || null;
 
@@ -201,7 +203,7 @@ static async create(data: {
       category: category ?? ProjectCategory.LOCAL,
       isPublished: isPublished ?? false,
       order: order ?? 0,
-
+      program: program ?? null,
       ...(createdById
         ? { creator: { connect: { id: createdById } } }
         : {}),
@@ -222,6 +224,7 @@ static async create(data: {
     language: string;
     category: ProjectCategory;
     isPublished: boolean;
+    program: string | null;
     order: number;
     createdById: string | null;
   }>
